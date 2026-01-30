@@ -1,0 +1,5 @@
+Koristicu Duende NuGet za Identity Server microservis.
+Koristicu AspNetCore Identity NuGet kao sto vec znam, jer on radi password hash, proveru da l je password dobar i sve one tabele ima itd.
+FE poziva Identity microservis koji koristi AspNetCore Identity + Duende server.
+Identity Server radi sve automatski (kreiranje JWT/RefreshToken, Token Rotation itd) bez da kucamo rucno. Identity Server samo izdaje tokene, 
+a oni se vrate u FE, a FE sa njima poziva api gateway koji validira tokene i prosledjuje poziv u microservise.

@@ -1,0 +1,87 @@
+﻿// Pogledaj gRPC.txt
+
+syntax = "proto3";
+
+package flight; // Postace namespace nakon build
+
+import "google/protobuf/timestamp.proto";  // mora zbog timestamp
+
+service FlightGrpcService{
+	// gRCP endpoints koje ce C# da generise kao sync/async 
+	rpc GetByIdGrpc (GetByIdRequestGrpc) returns (GetFlightByIdResultGrpc);
+	rpc GetAvailableSeatsGrpc (GetAvailableSeatsRequestGrpc) returns (GetAvailableSeatsResultGrpc);
+	rpc ReserveSeatGrpc (ReserveSeatRequestGrpc) returns (ReserveSeatResultGrpc);
+}
+
+// gRCP klase(message) sadrze brojeve, jer ne salju imena polja, vec redne brojeve cime manja i brza poruka
+
+message GetByIdRequestGrpc{
+	string Id = 1;
+}
+
+message GetFlightByIdResultGrpc{
+	FlightResponse FlightDto = 1;
+}
+
+message FlightResponse{
+	string Id = 1;
+	string FlightNumber = 2;
+	string AircraftId = 3;
+	string DepartureAirportId = 4;
+	google.protobuf.Timestamp DepartureDate = 5; // U C# ovo je DateTime
+	google.protobuf.Timestamp ArriveDate = 6;
+	string ArriveAirportId = 7;
+	double DurationMinutes = 8;
+	google.protobuf.Timestamp FlightDate = 9;
+	FlightStatusGrpc Status = 10;
+	double Price = 11; // Ne moze decimal iako mi treba, pa zato moram castovati ovo u C# kodu
+	string FlightId = 12;
+}
+
+enum FlightStatusGrpc {
+	FLIGHT_STATUS_UNKNOWN = 0;
+	FLIGHT_STATUS_FLYING = 1;
+	FLIGHT_STATUS_DELAY = 2;
+	FLIGHT_STATUS_CANCELED = 3;
+	FLIGHT_STATUS_COMPLETED = 4;
+}
+
+
+message GetAvailableSeatsRequestGrpc{
+	string FlightId = 1;
+}
+
+message GetAvailableSeatsResultGrpc{
+	repeated SeatDtoResponse SeatDtos = 1; // U C# ovo je lista
+}
+
+message SeatDtoResponse {
+	string Id = 1;
+	int32 SeatNumber = 2;
+	SeatTypeGrpc Type = 3;
+	SeatClassGrpc Class = 4;
+	string FlightId = 5;
+}
+
+enum SeatTypeGrpc {
+    SEAT_TYPE_UNKNOWN = 0;
+    SEAT_TYPE_WINDOW = 1;
+    SEAT_TYPE_MIDDLE = 2;
+    SEAT_TYPE_AISLE = 3;
+}
+
+enum SeatClassGrpc {
+    SEAT_CLASS_UNKNOWN = 0;
+    SEAT_CLASS_FIRST_CLASS = 1;
+    SEAT_CLASS_BUSINESS = 2;
+    SEAT_CLASS_ECONOMY = 3;
+}
+
+message ReserveSeatRequestGrpc{
+	string FlightId = 1;
+	int32 SeatNumber = 2;
+}
+
+message ReserveSeatResultGrpc{
+	string Id = 1;
+}

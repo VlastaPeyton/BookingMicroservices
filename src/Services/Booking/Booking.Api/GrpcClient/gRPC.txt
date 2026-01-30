@@ -1,0 +1,53 @@
+﻿.proto file definisem u gRCP Server/Both microservisu, a onda ga delim sa gRCP Client microservisom
+Dva nacina za deljenje .proto file u gRCP Client microservice:
+	1. Kopiram rucno ovu klasu u gRCP Client microservice 
+	2. Desni klik na gRPC Client microservice -> Add -> Connected Services -> Service Reference -> 
+	   -> + -> gRPC -> File select: flight.proto (.proto napravljen u gRPC Server projektu) -> 
+	   -> Type: Client 
+
+Nakon definicije .proto file u gRCP Server pravim Service folder gde definisem FlightGrpcService koja ce ove
+endpoints da definise u .NET maniru. U FlightGrpcService mapiram iz C# klasa u gRpc klase koje C# napravio interno 
+iz flight.proto kada smo build solution
+
+gRPC Client microservice ne treba biti AspNetCore gRPC tip projekta, vec API samo, ali treba da dodam:
+  <PackageReference Include="Grpc.Net.Client" Version="2.68.0" />
+  <PackageReference Include="Google.Protobuf" Version="3.x.x" />
+  <PackageReference Include="Grpc.Tools" Version="2.x.x" PrivateAssets="All" />
+  <Protobuf Include="Protos\flight.proto" GrpcServices="Client" />
+  Protos folder i .proto files u njemu
+
+gRPC Server/Both microservice mora biti AspNetCore gRPC Service tip projekta koji je ujedno API + gRCP 
+ili bilo koji tip projekta, ali onda da rucno dodam:
+	<PackageReference Include="Grpc.AspNetCore" Version="2.x.x" />
+	<Protobuf Include="Protos\flight.proto" GrpcServices="x" />, gde x moze biti Server/Both/Client
+	Protos folder + .proto files u njemu.
+	Service folder koji ima klasu koja implementira metode iz .proto file
+
+gRCP Server microservice: .proto file -> desni klik -> Properties -> Build Action: Protobuf compiler ->
+                          -> gRPC Stub Classes: Server only (ne treba ako ubacim odma u .csproj ono iznad)
+						  Ovo ce omoguciti Service folder i u njemu FlightGrpcServiceBase.FlightGrpcServiceBase zbog Server
+						  i samo kucam "public override" i C# ponudi ove endpoints u C# obliku koje su async, samo bez async sufiksa u imenu
+						  Program.cs: builder.Services.AddGrpc();
+									  app.MapGrpcService<MojGrpcService>();
+
+gRPC Client microservice: .proto file -> desni klik -> Properties -> Build Action: Protobuf compiler ->
+		                  -> gRPC Stub Classes: Client only (ovo ne treba ako ubacim odma u .csproj ono iznad)
+						  Program.cs:   builder.Services.AddGrpcClient<ProtobufService.ProtobufServiceClient>(options =>
+										{
+											options.Address = new Uri("https://localhost:5002");//adresa microservice2 koji je gRPC server 
+										});
+
+gRCP Both microservice: .proto file -> desni klik -> Propertties -> Build Action: Protobuf compiler ->
+					     -> gRPC Stub Classes: Client and Server (ovo ne treba ako ubacim odma u .csproj ono iznad)
+						 Ovo ce omoguciti Service folder i u njemu FlightGrpcServiceBase.FlightGrpcServiceBase zbog Server
+						 i samo kucam "public override" i C# ponudi ove endpoints u C# obliku koje su async, samo bez async sufiksa u imenu
+						 Program.cs: builder.Services.AddGrpc();
+									 app.MapGrpcService<MojGrpcService>();
+									 builder.Services.AddGrpcClient<ProtobufService.ProtobufServiceClient>(options =>
+									 {
+									 	options.Address = new Uri("https://localhost:5002");//adresa microservice2 koji je gRPC server 
+									 });
+
+U obj folderu, interno se naprave C# klase od .proto file messages.
+Mora da se build uspesno da bi se .proto files pretvorili u C# da bih mogo da koristim. Kada god prepravim nesto u .proto, moram rebuild project da bi se primenilo.
+Sve endpoints(metode) iz .proto file C# generise vise overloads sync + async tako da mogu koristiti i cancellationToken iako nema ga u definiciji u .proto file.

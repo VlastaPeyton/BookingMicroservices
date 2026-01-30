@@ -1,0 +1,40 @@
+﻿EventStoreDb skladisti samo DomainEvents i koristi gRCP za komunikaciju sa microservices, ali to mi ne utice na kod.
+EventStoreDb nije baza, to je append only log, ali ja cu objasniti kao da se radi o SQL bazi, jer lakse mi je da razumem.
+EventStoreDb skladisti EventData objekte koji sadrze:
+	- eventId  : unique id eventa
+	- type : eventType (npr "OrderCreatedDomainEvent")
+	- data : json bytes
+	- metadata : json bytes
+	- streamName : npr "Order-123", jer svaki custom AggregateRootEventSource je 1 stream koji sadrzi razne domain events
+	- streamRevision: pozicija eventa u streamu (poslednji event u stream ima streamRevision = AggregateRootEventSource.Version)
+	- created : kada je domain event kreiran
+
+Mapiram tj napravim EventData objekat iz DomainEvent da bih ga ubacio u EventStore, jer je to input tip eventa u EventStore.
+ResolvedEvent je tip eventa kada ga citamo iz EventStoreDb.
+
+Ne sme IAggregateRootEventSource da implementira IAggregateRoot jer je to anti-pattern.
+
+Moram u RequestDto koji ulazi u endpoint da prosledim Id ili da ga generisem u kodu, jer EventStore mora znati AggregateRootEventSourcing.Id pre nego sto 
+event posaljemo u EventStore. Nije ovo Sql Db pa da generise Id sama, ovde Id mora pre upisa u EventStore da se zna.
+
+Posto za svaki agregat imam gomilu eventova presporo je da za svaki stream radim replay eventova od pocetka kako bih naso trenutno stanje agregata, 
+vec koristim MongoDb (bilo koju NoSql, jer je brza za pretragu + skalabilna + itd) u koju stavljam snapshots svakog stream iz EventStore 
+(1 agregat = 1 stream u EventStore). Da bi se snapshot uradio, treba mi background worker koji se zove Subscription koji ce ocitavati periodicno 
+streamove i praviti snapshot i upisivati u MongoDb. 
+
+Checkpoint sluzi da prati do kog event u stream smo stigli i ovo treba za read model (projekciju), jer projekcija olaksava citanje podatak za FE.
+I za ovo koristim MongoDb. Cuva poziciju u streamu subscriptiona koji moze biti nad 1 ili vise streamova. Koristi ga SubscriberService
+koji je pozadinski servis za EventStore. Subcriber poziva sve handlere a oni provere da l mogu da handluju zeljeni event i ako mogu onda pozivaju.
+Projekcija je CustomEventHandler : EventHandler<CustomDomainEvent> koja azurira neku kolekciju u Mongo koja odgovara read modelu.
+Ona predstavlja denormalizovane podatke koji u FE idu. ReadModel mora imati samo proste tipove.
+Projekciju pravim u microservisima.
+Subscription je u stvari domain event dispatcher u EventSourcing koji radi kao background worker.
+
+EventStore treba da ima repository koji ce da pruza metode za write u event store i samo read metodu koja je potrebna za write logiku, ali nikako 
+query metode, jer query of EventStore se radi nad MongoDb koju background worker (subscriber na eventstore) puni non stop kada nesto novo ima u event store.
+
+EventSourcing zahteva CQRS implicitno, jer EventStore samo skladisti (command) DomainEvent i nije ni malo pozeljno query nad njim raditi, vec se query radi nad 
+(pozeljno no sql db) Mongo u koju se (putem Subscriber background worker) podaci iz EventStore u zeljenom formatu (ReadModel) upisuju.
+
+DDD + ES => CustomAggregate.Create metoda pravi prazan agregat, a u AddDomainEvents se poziva i Apply koja menja stanje tog agregata
+DDD bez ES => CustomAggregate.Create metoda pravi agregat i dodeli mu stanje, a AddDomainEvents samo dodaje event u listu

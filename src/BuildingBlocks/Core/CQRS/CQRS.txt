@@ -1,0 +1,3 @@
+CQRS (nebitno da l ima/nema EventSourcing), nije samo Command/QueryHandler, vec da query NE radim nad ISTOM tabelom u koju upisujem podatke tj da nad 
+AggregateRoot/AggregateRootEventSorucing ne radim upit, vec u tu tabelu samo upisem, a nekim servisom ocitavam write tabele i upisujem u DRUGU tabelu 
+podatke (koji nisu u formi write tabele). Cesto druga tabela je u drugoj (NoSql) bazi i naziva se ReadModel.

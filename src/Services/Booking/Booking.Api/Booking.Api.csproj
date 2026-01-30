@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Carter" Version="9.0.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+	<PackageReference Include="Grpc.AspNetCore" Version="2.70.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\Flight\Flight.Api\Flight.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<!-- Booking microservice je gRPC Client-->
+	<Protobuf Include="GrpcClient\Protos\flight.proto" GrpcServices="Client" />
+	<Protobuf Include="GrpcClient\Protos\passenger.proto" GrpcServices="Client" />
+  </ItemGroup>
+
+</Project>

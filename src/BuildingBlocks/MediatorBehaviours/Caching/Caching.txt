@@ -1,0 +1,23 @@
+﻿ICacheRequest:
+	postoji, jer Redis ima TTL za svaki key-value pair. 
+	TTL varira od bitnosti onoga sto upisujemo u Redis prilikom neke od caching strategija. 
+	Najcesce koristim Cache-aside strategiju. 
+	Ako ne definisem TTL, svaki key-value ce trajati beskonacno dok se Redis memory ne prepuni.
+	Ako definisem TTL, pri svakom upisu u redis, prosledujem key + TTL.
+	Interface zbog konzistentnosti i testiranja.
+
+IInvalidateCacheRequest:
+	Interface zbog konzistentnosti i testiranja.
+
+CachingBehaviour/InvalidateCachingBehaviour + DomainEventHandler:
+	Koristim VSA + Minimal API + CQRS i u to se bolje uklapa CachingBehaviour as MediatR pipeline behaviour, nego CacheRepository 
+  as decorator on top of existing repository + ako imam npr 10 repositories (za svaki Entity/AggregateRoot po jedan) i zelim svaki da kesiram, onda
+  je to 10 cache repository on top of existing 10 repository sto je previse. Ovako, sa MediatR pipeline, samo 1 pipeline napravim i 
+  cache radi za svaki objekat koji je implementirao ICacheRequest. 
+   Samo za Query smem Cache u MediatR Behaviour da stavim, a Command ne. Za Command moram u DomainEventHandler koji se aktivira na Command ! 
+
+IEasyCachingProvider (EasyCaching.Core & EasyCaching.Redis NuGets) umesto IDistriutedCache (Microsoft.Extensions.Caching.StackExchangeRedis NuGet)
+jer automatski serijalizuje/deserijalizuje, jer Redis samo JSON prima kao value + moze na vise caching mehanizama da se primeni nad njim, dok 
+IDistributedCache samo Redis prima.
+
+Posto je Query side of CQRS naslonjena na Read Modele u Mongo, za pocetak mi Cache i ne treba, osim ako nemam bas mnogo hot queries, jer Mongo je brz bas za read.

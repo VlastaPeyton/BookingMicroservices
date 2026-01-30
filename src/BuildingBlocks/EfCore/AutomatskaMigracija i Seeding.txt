@@ -1,0 +1,3 @@
+﻿Na Development, kada u Package Manager Console upisem "Add-Migration ImeMigracije" napravi se migracioni fajl u projektu, pa uradim "Update-Database"
+cime se azurira lokalna (Development) baza, pa takav kod kod prebacim na produkciju (zbog "Add-Migration ImeMigracije").
+Na Produkciji, nema Visual Studio, pa ne mogu da koristim Package Manager Console, ali zbog Development "Add-Migration ImeMigracije", 

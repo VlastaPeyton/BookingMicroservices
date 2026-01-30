@@ -1,0 +1,3 @@
+﻿ValueObject property mora biti primitivnog tipa.
+Validacija property mora u Of metodi.
+Imam implicit operator koji konvertuju ValueObject u type of Value field i vice versa zbog konverzije u DomainEventHandler.

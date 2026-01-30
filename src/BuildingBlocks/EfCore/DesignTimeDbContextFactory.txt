@@ -1,0 +1,3 @@
+﻿Koriisim kada ApplicationDbContext sadrzi DI (nesto u ctoru) kao u mom slucaju, jer onda samo tokom migracije mora da rucno kreiraApplicationDbContext 
+pomocu ove factory klase, inace EF Core nece moci migracije da odradi, a u runtime EF Core radi kao da ApplicationDbContext nema nikakv DI u ctoru
+tj u runtime za Query/Command u Db ova klasa je nepotrebna. 

@@ -1,0 +1,3 @@
+﻿TransactionScope je drugaciji nacin od IDbContextTransaction(dbContext.Database.BeginTransactionAsync) ako imam >= 2 DbContexta. 
+Koristi se za Distributed Transaction ako jedan DbContext fail, da i drugi fail. Garantuje atomicity.
+Moze vise od 1 DbContext nad istom bazom, a moze i svaki da ima svoju bazu.
