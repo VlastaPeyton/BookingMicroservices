@@ -22,7 +22,7 @@ namespace Booking.Api.Features.CreateBooking
 
                 return Results.Ok(response);
             })
-              .RequireAuthorization() // Isto ko [Authorize] u controller, dodaj u Program.cs policy i onda i ovde
+              .RequireAuthorization("ApiScope") // Isto ko [Authorize] u controller. Trazi "ApiScope" policy iz JwtExtensions.cs
               .WithName("CreateBooking")
               .Produces<CreateBookingResponseDto>()
               .ProducesProblem(StatusCodes.Status400BadRequest)

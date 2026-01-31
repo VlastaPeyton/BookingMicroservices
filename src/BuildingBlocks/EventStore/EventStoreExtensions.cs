@@ -16,8 +16,7 @@ namespace BuildingBlocks.EventStore
     {
         public static IServiceCollection AddEventStore(this IServiceCollection services, IConfiguration configuration)
         {
-            // EventStoreClient
-            var eventStoreConnectionString = configuration.GetConnectionString("EventStore") ?? "esdb://localhost:2113?tls=false";
+            var eventStoreConnectionString = configuration["EventStore:ConnectionString"] ?? "esdb://localhost:2113?tls=false";
             var settings = EventStoreClientSettings.Create(eventStoreConnectionString);
             var eventStoreClient = new EventStoreClient(settings);
             services.AddSingleton(eventStoreClient);
@@ -27,8 +26,8 @@ namespace BuildingBlocks.EventStore
 
         public static IServiceCollection AddMongo(this IServiceCollection services, IConfiguration configuration)
         {
-            var mongoConnectionString = configuration.GetConnectionString("Mongo") ?? "mongodb://localhost:27017";
-            var mongoDatabaseName = configuration["MongoDb:DatabaseName"] ?? "EventStoreSupportMongo";
+            var mongoConnectionString = configuration["Mongo:ConnectionString"] ?? "mongodb://localhost:27017";
+            var mongoDatabaseName = configuration["Mongo:DatabaseName"] ?? "EventStoreSupportMongo";
             var mongoClient = new MongoClient(mongoConnectionString);
             var mongoDatabase = mongoClient.GetDatabase(mongoDatabaseName);
             services.AddSingleton<IMongoClient>(mongoClient);

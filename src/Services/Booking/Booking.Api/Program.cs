@@ -10,7 +10,6 @@ using BuildingBlocks.MediatorBehaviours.Validation;
 using BuildingBlocks.MinimalApis;
 using BuildingBlocks.UserProviders;
 using Carter;
-using Flight.Api.GrpcServer;
 using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +41,5 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCarter();             // Endpoints tek nakom middlewares
-app.MapFlightGrpcServer();
 
 app.Run();

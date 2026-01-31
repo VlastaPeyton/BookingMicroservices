@@ -46,6 +46,7 @@ builder.Services.AddMediatR(config =>
     config.AddOpenBehavior(typeof(ValidationBehaviour<,>));
     config.AddOpenBehavior(typeof(LoggingBehaviour<,>));
 });
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
